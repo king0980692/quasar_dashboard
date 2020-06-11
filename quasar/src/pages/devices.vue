@@ -4,7 +4,7 @@
   <q-dialog v-model="registerDialog" persistent>
     <q-card class="my-card">
       <q-card-section>
-        <q-form @submit="updateDevReg" class="q-pa-md">
+        <q-form @submit="updateDevReg">
           <div v-if="show === true">
           <q-btn icon="delete" color="grey" label="x Clear All" @click="clearRegis"/>
           </div>
@@ -80,7 +80,7 @@
                         input-debounce="0"
                         @new-value="createValue"
                         :rules="[ val => verify_columns('reg_remarks', val) ]"
-                        style="min-width:200px; width:200px;"
+                        style="width:300px; top:50%; position:relative; "
                       />
                   </q-td>
 
@@ -107,6 +107,7 @@
       :filter="filter"
       row-key="MAC"
       dense
+      style="max-height:430px"
     >
       <template v-slot:top-right>
         <q-input borderless dense debounce="300" v-model="filter" placeholder="Search your device">
@@ -176,7 +177,7 @@
                 input-debounce="0"
                 @new-value="createValue"
                 :rules="[ val => verify_columns('remarks', val) ]"
-                style="min-width:200px; width:200px;"
+                style="width:300px; top:50%; position:relative; "
               />
           </q-td>
 
@@ -210,7 +211,7 @@ import {
   Loading,
   QSpinnerGears
 } from 'quasar'
-var baseURL = 'http://strapi.frrut.net:1337/mk-100-users/'
+var baseURL = 'https://api.frrut.net/mk-100-users/'
 var registernewdevicesURL = 'https://mk100.frrut.net:1880/registernewdevices'
 var exist_cageID_list = []
 var no_dul_rack_cage = []
@@ -253,7 +254,7 @@ export default {
         { name: 'lastModified', label: '最後更新', sortable: true, field: 'lastModified', align: 'center' },
         { name: 'registerUserName', label: '登記使用者', field: 'registerUserName', sortable: true, align: 'center' },
         { name: 'detail', label: '即時資料', field: 'detail', sortable: true, align: 'center' },// { name: 'info', label: 'Info', field: 'info', align: 'center' }
-        { name: 'remarks', label: '備註標籤', field: 'remarks', align: 'left'}
+        { name: 'remarks', label: '備註標籤', field: 'remarks', align: 'left', sortable: true}
       ],
       register_columns: [
         { name: 'MAC', label: '設備 ID', field: 'MAC', sortable: true, align: 'center' },
@@ -276,9 +277,9 @@ export default {
     this.loginInfo = JSON.parse(localStorage.getItem('loginInfo') || '{}')
     // console.log(this.loginInfo)
     // console.log(this.loginInfo.id)
-    const requestOne = axios.get('http://strapi.frrut.net:1337/device-collections/')
-    const requestTwo = axios.get('http://strapi.frrut.net:1337/last-data')
-    const requestThree = axios.get('http://strapi.frrut.net:1337/mk-100-users/')
+    const requestOne = axios.get('https://api.frrut.net/device-collections/')
+    const requestTwo = axios.get('https://api.frrut.net/last-data')
+    const requestThree = axios.get('https://api.frrut.net/mk-100-users/')
     axios.all([requestOne, requestTwo, requestThree]).then(axios.spread((...responses) => {
       this.deviceList = responses[0].data
       this.register_device_list = responses[0].data
@@ -389,9 +390,15 @@ export default {
       }
     },
     createValue (val, done) {
-      done(val, 'add-unique')
+      if(val.length > 15){
+
+      }
+      else{
+        done(val, 'add-unique')
+      }
     },
     checkselect(){
+      console.log("this.selected: ", this.selected)
       if(this.selected.length > 0){
         // console.log("this.selected: ", this.selected)
         // console.log("this.selected[0].remarks:", this.selected[0].remarks)
@@ -421,7 +428,6 @@ export default {
       return this.selected.length === 0 ? '' : `${this.selected.length} device${this.selected.length > 1 ? 's' : ''} selected of ${this.register_device_list.length}`
     },
     updateDevReg: function () {
-      // console.log(this.selected)
       if (this.selected.length !== 0) {
         Loading.show({
           delay: 400,
@@ -442,7 +448,7 @@ export default {
             this.selected[k].remarks = String(this.selected[k].remarks)
           }
           else{
-            this.selected[k].remarks.pop()
+            // this.selected[k].remarks.pop()
             this.selected[k].remarks = ""
           }
         }
@@ -451,7 +457,7 @@ export default {
         // console.log("type of this.selected[0].remarks: ", typeof(this.selected[0].remarks))
 
         this.selected.forEach(element =>
-          axios.put('http://api.frrut.net:1337/device-collections/' + element.id, element)
+          axios.put('https://api.frrut.net/device-collections/' + element.id, element)
             .then(response => {
               console.log('update success')
               console.log(response.data)
@@ -507,7 +513,7 @@ export default {
         spinner: QSpinnerGears
       })
       this.loading = true
-      axios.get('http://api.frrut.net:1337/device-collections/')
+      axios.get('https://api.frrut.net/device-collections/')
         .then(response => {
           this.deviceList1 = response.data
           console.log('update success')
@@ -518,7 +524,7 @@ export default {
             a.registerUserName = ''
           })
           this.deviceList1.forEach(element =>
-            axios.put('http://api.frrut.net:1337/device-collections/' + element.id, element)
+            axios.put('https://api.frrut.net/device-collections/' + element.id, element)
               .then(response => {
                 console.log('update success')
                 console.log(response.data)
@@ -699,7 +705,7 @@ export default {
       }
       console.log("putData: ", putData)
       putData.forEach(DeviceInfo =>
-        axios.put("http://strapi.frrut.net:1337/device-collections/" + DeviceInfo.id, DeviceInfo)
+        axios.put("https://api.frrut.net/device-collections/" + DeviceInfo.id, DeviceInfo)
           .then(response => {
             console.log('Update success')
             console.log(response.data)
@@ -747,7 +753,8 @@ export default {
 .my-register-table
   /* max height is important */
   .q-table__middle
-    max-height: 300px
+    min-height: 250px
+    max-height: 500px
 
   .q-table__top,
   .q-table__bottom,

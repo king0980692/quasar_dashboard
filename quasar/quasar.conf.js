@@ -47,12 +47,12 @@ module.exports = function (ctx) {
       'QTr',
       'QTd',
       'QImg',
-      'QDialog'],
+      'QDialog',],
       directives: ['ClosePopup'],
 
       // Quasar plugins
       plugins: [
-        'Loading', 'Dialog'
+        'Loading', 'Dialog', 'Notify'
     ]
     },
 

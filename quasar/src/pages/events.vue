@@ -1,6 +1,6 @@
 <template>
 <q-page q-pa-md row no-wrap items-center justify-around>
-<template>
+<!-- <template>
     <q-dialog v-model="persistent" persistent transition-show="scale" transition-hide="scale">
       <q-card class="bg-primary text-white" style="width: 300px">
         <q-card-section>
@@ -17,7 +17,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-</template>
+</template> -->
 
  <div class="q-pa-md">
     <q-table
@@ -28,6 +28,7 @@
       row-key="timestamp"
       :filter="filter"
       dense
+      style="height:auto;"
     >
     <template v-slot:top-left>
       <q-btn-toggle
@@ -264,12 +265,12 @@ export default {
       spinner: QSpinnerGears
     })
 
-    const requestOne = axios.get('http://strapi.frrut.net:1337/device-collections')
+    const requestOne = axios.get('https://api.frrut.net/device-collections')
     // const requestTwo = axios.get('http://strapi.frrut.net:1337/event-lasts')
-    const requestTwo = axios.get('http://strapi.frrut.net:1337/last-data')
-    const requestThree = axios.get('http://strapi.frrut.net:1337/mk-100-users')
-    // const requestFour = axios.get('http://strapi.frrut.net:1337/event-alls?_limit=200&_sort=timestamp:DESC')
-    const requestFour = axios.get('http://strapi.frrut.net:1337/all-data?_limit=200&_sort=timestamp:DESC')
+    const requestTwo = axios.get('https://api.frrut.net/last-data')
+    const requestThree = axios.get('https://api.frrut.net/mk-100-users')
+    // const requestFour = axios.get('https://api.frrut.net/all-data?_limit=300&_sort=timestamp:DESC')
+    const requestFour = axios.get('https://api.frrut.net/all-data?_limit=1000&_sort=timestamp:DESC&MAC_ncontains=111111111111')
     axios.all([requestOne, requestTwo, requestThree, requestFour]).then(axios.spread((...responses) => {
       this.deviceCollection = responses[0].data
       this.eventLasts = responses[1].data
@@ -335,7 +336,7 @@ export default {
           console.log('Not In show warning')
           this.userMACList = []
           userMAC = []
-          this.persistent = true
+          // this.persistent = true
         }
       }
       // console.log('*******this.deviceCollection**********')
@@ -348,6 +349,7 @@ export default {
           }
         })
       }
+      // console.log("userMACList: ", this.userMACList)
       //console.log(fllterdeviceCollection.length)
       this.deviceCollection = fllterdeviceCollection
       console.log("this.deviceCollection:::::::::", this.deviceCollection)
@@ -364,11 +366,12 @@ export default {
       console.log('***qty***')
       console.log(qty)
       if (qty === 0) {
-        this.persistent = true
+        // this.persistent = true
       }
       //console.log("api data")
       //console.log(JSON.stringify(apiData))
       console.log("userMAC: ", userMAC)
+      console.log("apiData: ", apiData)
 
       var testdata = []
       for (var k = 0; k < userMAC.length; k++) {
@@ -438,7 +441,6 @@ export default {
   },
   mqtt: {
     'topic/event/#' (data1, topic) {
-      console.log('topic(this.topicmqtt): ' + this.topicmqtt)
       this.obj = JSON.parse(data1)
       console.log('original this.obj print')
       console.log(this.obj)
@@ -449,11 +451,9 @@ export default {
       console.log(checkMAC.length)
 
       if (checkMAC.length === 12) {
-        // console.log('last buffArray print')
-        // console.log(this.buffArray)
         this.buffArray = this.data
         this.buffArray.unshift(this.obj)
-        //console.log(this.buffArray.length)
+        // console.log(this.buffArray.length)
 
         if (this.model === 'onlyalert') {
           // this.buffArray = this.buffArray.filter(test => test.oaAlertStatus === true)  #################################
@@ -465,34 +465,28 @@ export default {
           console.log(this.model)
         }
         for (var j = 0; j < this.buffArray.length; j++) {
-          // this.buffArray[j].fromNow = moment(this.buffArray[j].timestamp * 1000).locale('zh-TW').fromNow()
           this.buffArray[j].timeStr = moment(this.buffArray[j].timestamp * 1000).locale('zh-TW').format('YYYY/MM/DD HH:mm:ss')
           this.buffArray[j].volt = parseFloat(this.buffArray[j].volt.toFixed(2))
         }
         // this.data = this.buffArray
-        var qtyMax = 200
+        var qtyMax = 300
         if (this.buffArray.length > qtyMax) {
           var temparray = []
           for (let i = 0; i < qtyMax; i++) {
             temparray.push(this.buffArray[i])
           }
-          //console.log(temparray.length)
           this.data = temparray
           this.playOKSound()
-          // this.buffArray = temparray
-          //console.log(JSON.stringify(this.data))
-          //console.log(JSON.stringify(this.data.length))
         } 
         else {
           console.log(this.buffArray.length)
           this.data = this.buffArray
           this.playOKSound()
-          // this.buffArray = this.buffArray1
         }
       } 
       else {
         console.log('not for this user, NO show')
-        this.playLostcontactSound()
+        // this.playLostcontactSound()
       }
     }
   },
@@ -590,8 +584,6 @@ export default {
 .my-sticky-header-table
   /* max height is important */
   .q-table__middle
-
-    max-height: 400px
 
   .q-table__top,
   .q-table__bottom,

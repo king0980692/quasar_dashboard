@@ -171,7 +171,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 
-var baseURL = 'http://strapi.frrut.net:1337/mk-100-users/'
+var baseURL = 'https://api.frrut.net/mk-100-users/'
 var addnewuserURL = 'https://mk100.frrut.net:1880/addnewuser'
 var addnewRackURL = 'https://mk100.frrut.net:1880/addnewRack'
 
@@ -265,7 +265,7 @@ export default{
               addnewuserDATA.validate_code = validate_code
               axios.post(addnewuserURL, addnewuserDATA) 
                 .then(response => {
-                  axios.get('http://strapi.frrut.net:1337/mk-100-users/')
+                  axios.get('https://api.frrut.net/mk-100-users/')
                   .then(response => {
 
                     var objectRack = {"respRack": ['0']}

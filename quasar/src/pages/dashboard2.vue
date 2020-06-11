@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <div class="q-pa-md">
-      <!-- <div class="row justify-center q-pa-sm">
+      <div class="row justify-center q-pa-sm">
         <q-btn-toggle
           glossy
           no-caps
@@ -12,7 +12,8 @@
             { label: 'Cage', value: 'cage' }
           ]"
         />
-      </div> -->
+      </div>
+
       <q-carousel
         v-model="slide"
         transition-prev="slide-right"
@@ -23,7 +24,7 @@
         style="height:auto; "
       >
         <!-- Slide 1: Rack -->
-        <q-carousel-slide name="overview" class="column no-wrap" >
+        <q-carousel-slide name="overview" class="column no-wrap">
           <div class="row justify-center q-pa-sm">
             <div class="col-12">
               <q-card
@@ -44,15 +45,8 @@
                       
                     />
                   </div> -->
-                  <q-toolbar class="" style="background:#FF9F7E; color:white;">
-                    <q-toolbar-title>
-                      <q-icon name="warning" />
-                      Warning Bulletin Board
-                    </q-toolbar-title>
-                  </q-toolbar>
-
-                  <div id="bulletin" ref="container">
-                    <!-- <q-btn
+                  <div ref="container" class="q-pa-md q-gutter-sm">
+                    <q-btn
                       no-caps
                       unelevated
                       color="warning"
@@ -61,7 +55,7 @@
                         add_btn('1', 'Cage-1 low volt', 'list', 'primary')
                       "
                       label="Insert Warning"
-                    /> -->
+                    />
                   </div>
                 </q-card-section>
               </q-card>
@@ -70,12 +64,6 @@
             <div class="col-3">
               <q-card style=" float:center;  text-align:center;">
                 <q-card-section style="width:auto-fill; height:auto;">
-                  <q-icon name="wifi" size="50px" >
-                    <q-tooltip anchor="center right" self="center left" content-class="bg-indigo" :offset="[10, 10]" content-style="font-size:14px;">
-                      Connection
-                    </q-tooltip>
-                  </q-icon>
-
                   <pie-chart
                     v-if="loaded"
                     :chartdata="doughnut_alive_device_data"
@@ -88,11 +76,6 @@
             <div class="col-3">
               <q-card style=" float:center;  text-align:center;">
                 <q-card-section style="width:auto-fill; height:auto;">
-                  <q-icon name="battery_charging_full" size="50px">
-                    <q-tooltip anchor="center right" self="center left" content-class="bg-indigo" :offset="[10, 10]" content-style="font-size:14px;">
-                      Battery
-                    </q-tooltip>
-                  </q-icon>
                   <pie-chart
                     v-if="loaded"
                     :chartdata="doughnut_battery_alert_data"
@@ -105,11 +88,6 @@
             <div class="col-3">
               <q-card style=" float:center;  text-align:center;">
                 <q-card-section style="width:auto-fill; height:auto;">
-                  <q-icon name="gradient " size="50px" >
-                    <q-tooltip anchor="center right" self="center left" content-class="bg-indigo" :offset="[10, 10]" content-style="font-size:14px;">
-                      Environment
-                    </q-tooltip>
-                  </q-icon>
                   <pie-chart
                     v-if="loaded"
                     :chartdata="doughnut_dirt_alert_data"
@@ -122,11 +100,6 @@
             <div class="col-3">
               <q-card style=" float:center;  text-align:center;">
                 <q-card-section style="width:auto-fill; height:auto;">
-                  <q-icon name="local_dining  " size="50px">
-                    <q-tooltip anchor="center right" self="center left" content-class="bg-indigo" :offset="[10, 10]" content-style="font-size:14px;">
-                      Feed
-                    </q-tooltip>
-                  </q-icon>
                   <pie-chart
                     v-if="loaded"
                     :chartdata="doughnut_feeder_alert_data"
@@ -152,26 +125,67 @@
             </div> -->
           </div>
         </q-carousel-slide>
+
+        <!-- Slide 2: Rack -->
+        <q-carousel-slide name="rack" class="column no-wrap flex-center">
+          <div class="row justify-center q-pa-md">
+            <div class="col-6">
+              <q-card
+                style="width:350px; height:350px; margin-left:30%; text-align:center;"
+              >
+                <q-card-section style="width:350px; height:350px;">
+                  <line-chart v-if="loaded" :chartdata="chartdata" />
+                </q-card-section>
+              </q-card>
+            </div>
+            <div class="col-6 left">
+              <q-card style="width:350px; height:350px;  text-align:center;">
+                <q-card-section style="width:350px; height:350px;">
+                  <line-chart v-if="loaded" :chartdata="chartdata" />
+                </q-card-section>
+              </q-card>
+            </div>
+
+            <div class="col-6">
+              <q-card
+                style="width:350px; height:350px; margin-left:30%; margin-top:25px; text-align:center;"
+              >
+                <q-card-section style="width:350px; height:350px;">
+                  <line-chart v-if="loaded" :chartdata="chartdata" />
+                </q-card-section>
+              </q-card>
+            </div>
+            <div class="col-6 left">
+              <q-card
+                style="width:350px; height:350px; margin-top:25px; text-align:center;"
+              >
+                <q-card-section style="width:350px; height:350px;">
+                  <line-chart v-if="loaded" :chartdata="chartdata" />
+                </q-card-section>
+              </q-card>
+            </div>
+          </div>
+        </q-carousel-slide>
+
+        <q-carousel-slide name="cage" class="column no-wrap flex-center">
+          <q-icon name="layers" color="primary" size="56px" />
+          <div class="q-mt-md text-center">
+            {{ lorem }}
+          </div>
+        </q-carousel-slide>
         <template v-slot:control>
-          <q-carousel-control position="bottom-right" :offset="[8, 8]">
+          <q-carousel-control position="bottom-right" :offset="[18, 18]">
             <q-btn
               push
               round
               dense
-              size="18px"
               color="white"
               text-color="primary"
               :icon="fullscreen ? 'fullscreen_exit' : 'fullscreen'"
               @click="fullscreen = !fullscreen"
-            >
-              <q-tooltip anchor="center left" self="center right" content-class="bg-indigo" :offset="[10, 10]" content-style="font-size:10px;">
-                Fullscreen
-              </q-tooltip>
-            </q-btn>
+            />
           </q-carousel-control>
         </template>
-
-        
       </q-carousel>
     </div>
   </q-page>
@@ -181,15 +195,10 @@
 import axios from "axios";
 import LineChart from "../components/LineChart.js";
 import PieChart from "../components/PieChart.js";
-import moment from 'moment'
 // import ChartJSPluginDatalabels from "chartjs-plugin-datalabels";
 import ChartJspluginDoughnutlabel from "chartjs-plugin-doughnutlabel";
 import Button from "../components/button";
 import Vue from "vue";
-
-var all_device_MAC = [];
-var last_data_for_mqtt = [];
-
 export default {
   name: "PageIndex",
   components: {
@@ -200,7 +209,7 @@ export default {
   data() {
     return {
       okaudio: "",
-      // all_device_MAC: [],
+      MAC: [],
       slide: "overview",
       lorem: "Hi!",
       event_list: [
@@ -239,74 +248,109 @@ export default {
     };
   },
   computed: {
-
+    dirty_result() {
+      return;
+    }
   },
   created() {
     // console.log("testing")
-    console.log("all_device_MAC: ", all_device_MAC);
     this.okaudio = new Audio("https://mk100.frrut.net/when.mp3");
     this.loaded = false;
-    this.get_api();
-    
     this.topicmqtt = "topic/event/#";
     this.$mqtt.subscribe(this.topicmqtt);
 
+    this.get_api();
     // this.intervalFetchData();
+  },
+  mqtt: {
+    "topic/event/#"(data1, topic) {
+      console.log("topic(this.topicmqtt): " + this.topicmqtt);
+      this.obj = JSON.parse(data1);
+      console.log("original this.obj print");
+      console.log(this.obj);
+      this.timestr = this.obj.timeStr;
+      console.log("this.all_device_MAC: ", this.all_device_MAC);
+      var checkMAC = this.userMACList
+        .filter(test => test === this.obj.MAC)
+        .toString();
+      console.log(checkMAC.length);
+
+      if (checkMAC.length === 12) {
+        // console.log('last buffArray print')
+        // console.log(this.buffArray)
+        this.buffArray = this.data;
+        this.buffArray.unshift(this.obj);
+        //console.log(this.buffArray.length)
+
+        if (this.model === "onlyalert") {
+          // this.buffArray = this.buffArray.filter(test => test.oaAlertStatus === true)  #################################
+          // this.data = this.data.filter(test => test.MAC !== '111111111111')
+          console.log(this.model);
+        } else if (this.model === "allevents") {
+          // this.data = this.data.filter(test => test.MAC !== '111111111111')
+          console.log(this.model);
+        }
+        for (var j = 0; j < this.buffArray.length; j++) {
+          // this.buffArray[j].fromNow = moment(this.buffArray[j].timestamp * 1000).locale('zh-TW').fromNow()
+          this.buffArray[j].timeStr = moment(this.buffArray[j].timestamp * 1000).locale("zh-TW").format("YYYY/MM/DD HH:mm:ss");
+          this.buffArray[j].volt = parseFloat(
+            this.buffArray[j].volt.toFixed(2)
+          );
+        }
+        // this.data = this.buffArray
+        var qtyMax = 200;
+        if (this.buffArray.length > qtyMax) {
+          var temparray = [];
+          for (let i = 0; i < qtyMax; i++) {
+            temparray.push(this.buffArray[i]);
+          }
+          //console.log(temparray.length)
+          this.data = temparray;
+          this.playOKSound();
+          // this.buffArray = temparray
+          //console.log(JSON.stringify(this.data))
+          //console.log(JSON.stringify(this.data.length))
+        } else {
+          console.log(this.buffArray.length);
+          this.data = this.buffArray;
+          this.playOKSound();
+          // this.buffArray = this.buffArray1
+        }
+      } else {
+        console.log("not for this user, NO show");
+        this.playLostcontactSound();
+      }
+    }
   },
   methods: {
     add_btn(
-      rack_name = "",
       cage_id = "",
       text = "Click me!",
       icon_name = "",
       type = "",
-      tooltip_text = "timeStr"
+      tooltip_text = "test1234"
     ) {
       var ComponentClass = Vue.extend(Button);
       var instance = new ComponentClass({
         propsData: {
-          rack_name: rack_name,
           _id: cage_id,
           type: type,
           icon_type: icon_name,
           tooltip_text: tooltip_text
         }
       });
-      instance.$slots.default = [rack_name, " ", cage_id, " ", text];
+      instance.$slots.default = [text];
       instance.$mount(); // pass nothing
       // console.log("this.$refs: ", this.$refs);
       this.$refs.container.appendChild(instance.$el);
     },
-    del_btn(){
-      const myNode = document.getElementById("bulletin");
-      while (myNode.firstChild) {
-        myNode.removeChild(myNode.lastChild);
-      }
-      // this.$refs.container.removeChild(instance.$el);
-    },
-    // triggerWarning(position) {
-    //   this.$q.notify({
-    //     type: "warning",
-    //     message: 'Rack: Mouse, Cage: 56, "Feeder is Insufficient."',
-    //     position,
-    //     actions: [{ label: "OK", color: "red", handler: () => {} }]
-    //   });
-    // },
-    playOKSound() {
-      console.log("Play OK sound");
-      const okaudioPromise = this.okaudio.play();
-      if (okaudioPromise !== undefined) {
-        okaudioPromise
-          .then(() => {
-            console.log("Finished Play OK sound");
-            // Automatic playback started!
-            // Show playing UI.
-          })
-          .catch(error => {
-            // Auto-play was prevented
-            // Show paused UI.
-          });
-      }
+    triggerWarning(position) {
+      this.$q.notify({
+        type: "warning",
+        message: 'Rack: Mouse, Cage: 56, "Feeder is Insufficient."',
+        position,
+        actions: [{ label: "OK", color: "red", handler: () => {} }]
+      });
     },
     random_color(rand) {
       return "#" + Math.floor(rand * 16777215).toString(16);
@@ -314,11 +358,11 @@ export default {
     checkTime() {
       return Date.parse(new Date());
     },
-    // intervalFetchData() {
-    //   setInterval(() => {
-    //     this.get_api();
-    //   }, 6000);
-    // },
+    intervalFetchData() {
+      setInterval(() => {
+        this.get_api();
+      }, 6000);
+    },
     get_api() {
       const requestOne = axios.get("https://api.frrut.net/device-collections");
       const requestTwo = axios.get("https://api.frrut.net/last-data");
@@ -335,9 +379,8 @@ export default {
             const lastdata = responses[1].data.filter(function(item) {
               return item.MAC;
             });
-            last_data_for_mqtt = lastdata
             const mk100users = responses[2].data;
-            // const alldata = responses[3].data
+            // const alldata = responses[3].data;
 
             // console.log("deviceCollection: ", deviceCollection)
             // console.log("lastdata: ", lastdata)
@@ -355,9 +398,9 @@ export default {
             }
 
             var role = userInfo[0].role;
-            all_device_MAC = [];
+            var all_device_MAC = [];
             var user_lastdata = [];
-            console.log(role)
+            // console.log(role)
 
             if (role === "admin") {
               deviceCollection.map(function(a) {
@@ -369,8 +412,7 @@ export default {
                   user_lastdata.push(a);
                 }
               });
-            }
-            else {
+            } else {
               deviceCollection.map(function(a) {
                 if (a.registerUserID === userInfo[0].id) {
                   all_device_MAC.push(a.MAC);
@@ -383,34 +425,8 @@ export default {
                 }
               });
             }
-            console.log("user_lastdatauser_lastdata: ", user_lastdata)
 
-            for (var j = 0; j < user_lastdata.length; j++) {
-              user_lastdata[j].timeStr = moment(user_lastdata[j].timestamp * 1000).locale('zh-TW').format('YYYY/MM/DD HH:mm:ss')
-            }
-
-
-            
-            user_lastdata = user_lastdata.sort((a, b) => b.timestamp - a.timestamp)
-            this.buffArray = user_lastdata
-
-            var qtyMax = 200
-            if (this.buffArray.length > qtyMax) {
-              var temparray = []
-              for (let i = 0; i < qtyMax; i++) {
-                temparray.push(this.buffArray[i])
-              }
-              user_lastdata = temparray
-              this.check_for_add_btn(user_lastdata)
-            } 
-            else {
-              console.log(user_lastdata.length)
-              this.check_for_add_btn(user_lastdata)
-            } 
-
-
-            var Timeout_devices =
-              all_device_MAC.length - user_lastdata.length;
+            var Timeout_devices = all_device_MAC.length - user_lastdata.length;
 
             var check_time_list = user_lastdata.map(
               item => nowtime - item.timestamp >= 14400
@@ -425,17 +441,28 @@ export default {
               }
             }
             console.log("user_lastdata: ", user_lastdata, user_lastdata.length);
+            console.log("all_device_MAC: ", all_device_MAC);
 
             var Working_devices = user_lastdata.length;
 
-            var Sufficient_battery = user_lastdata.filter(x => x.voltAlertColor === "green").length;
-            var Insufficient_battery = user_lastdata.filter(x => x.voltAlertColor === "red").length;
+            var Sufficient_battery = user_lastdata.filter(
+              x => x.voltAlertColor === "green"
+            ).length;
+            var Insufficient_battery = user_lastdata.filter(
+              x => x.voltAlertColor === "red"
+            ).length;
 
-            var Clean = user_lastdata.filter(x => x.blobAlertColor === "green").length;
-            var Dirty = user_lastdata.filter(x => x.blobAlertColor === "red").length;
+            var Clean = user_lastdata.filter(x => x.blobAlertColor === "green")
+              .length;
+            var Dirty = user_lastdata.filter(x => x.blobAlertColor === "red")
+              .length;
 
-            var Sufficient_feed = user_lastdata.filter(x => x.feederAlertColor === "green").length;
-            var Insufficient_feed = user_lastdata.filter(x => x.feederAlertColor === "red").length;
+            var Sufficient_feed = user_lastdata.filter(
+              x => x.feederAlertColor === "green"
+            ).length;
+            var Insufficient_feed = user_lastdata.filter(
+              x => x.feederAlertColor === "red"
+            ).length;
 
             this.alive_device_options = {
               responsive: true,
@@ -449,10 +476,10 @@ export default {
                         (Working_devices + Timeout_devices),
                       font: { size: "20", style: "bold" }
                     },
-                    // {
-                    //   text: "Timeout",
-                    //   font: { size: "20", style: "bold" }
-                    // }
+                    {
+                      text: "Timeout",
+                      font: { size: "20", style: "bold" }
+                    }
                   ]
                 }
               }
@@ -470,10 +497,10 @@ export default {
                         (Sufficient_battery + Insufficient_battery),
                       font: { size: "20", style: "bold" }
                     },
-                    // {
-                    //   text: "Insufficient",
-                    //   font: { size: "20", style: "bold" }
-                    // }
+                    {
+                      text: "Insufficient",
+                      font: { size: "20", style: "bold" }
+                    }
                   ]
                 }
               }
@@ -488,10 +515,10 @@ export default {
                       text: Dirty + " of " + (Clean + Dirty),
                       font: { size: "20", style: "bold" }
                     },
-                    // {
-                    //   text: "Dirty",
-                    //   font: { size: "20", style: "bold" }
-                    // }
+                    {
+                      text: "Dirty",
+                      font: { size: "20", style: "bold" }
+                    }
                   ]
                 }
               }
@@ -509,17 +536,17 @@ export default {
                         (Sufficient_feed + Insufficient_feed),
                       font: { size: "20", style: "bold" }
                     },
-                    // {
-                    //   text: "Insufficient",
-                    //   font: { size: "20", style: "bold" }
-                    // }
+                    {
+                      text: "Insufficient",
+                      font: { size: "20", style: "bold" }
+                    }
                   ]
                 }
               }
             };
 
             this.doughnut_alive_device_data = {
-              labels: ["Connected", "Lost"],
+              labels: ["Working Devices", "Timeout Devices"],
               datasets: [
                 {
                   backgroundColor: ["#40bf40", "#e6e6e6"],
@@ -529,7 +556,7 @@ export default {
             };
 
             this.doughnut_battery_alert_data = {
-              labels: ["Full", "Empty"],
+              labels: ["Sufficient Battery", "Insufficient Battery"],
               datasets: [
                 {
                   backgroundColor: ["#40bf40", "#ff5c33"],
@@ -539,7 +566,7 @@ export default {
             };
 
             this.doughnut_dirt_alert_data = {
-              labels: ["Clean", "Dirty"],
+              labels: ["Clean Environment", "Dirty Environment"],
               datasets: [
                 {
                   backgroundColor: ["#40bf40", "#ff5c33"],
@@ -549,7 +576,7 @@ export default {
             };
 
             this.doughnut_feeder_alert_data = {
-              labels: ["Full", "Empty"],
+              labels: ["Sufficient Feed", "Insufficient Feed"],
               datasets: [
                 {
                   backgroundColor: ["#40bf40", "#ff5c33"],
@@ -563,79 +590,9 @@ export default {
         .catch(e => {
           console.error(e);
         });
-    },
-    check_for_add_btn(check_data){
-
-      console.log("check_data: ", check_data)
-      this.del_btn()
-      for(var i = 0; i < check_data.length; i++){
-        if(check_data[i].feederAlert_str === "飼料不足"){
-          this.add_btn(check_data[i].rackName, check_data[i].cageID, check_data[i].feederAlert_str, 'local_dining', 'warning', check_data[i].timeStr)
-        }
-        if (check_data[i].blobAlert_str === "髒污") {
-          this.add_btn(check_data[i].rackName, check_data[i].cageID, check_data[i].blobAlert_str, 'gradient', 'warning', check_data[i].timeStr)
-        }
-        if (check_data[i].voltAlert_str === "電量不足") {
-          this.add_btn(check_data[i].rackName, check_data[i].cageID, check_data[i].voltAlert_str, 'battery_alert', 'warning', check_data[i].timeStr)
-
-        }
-      }
-
-    },
-  },
-  mounted() {},
-
-  mqtt: {
-    "topic/event/#"(mqtt_data_payload, topic) {
-      // console.log("topic(this.topicmqtt): " + this.topicmqtt);
-      this.obj = JSON.parse(mqtt_data_payload);
-      console.log("this.obj: ", this.obj);
-
-      this.timestr = this.obj.timeStr;
-      console.log("all_device_MAC: ", all_device_MAC);
-      // console.log('this.userMACList, userMAC')
-      // console.log(this.userMACList)
-      var checkMAC = all_device_MAC.filter(test => test === this.obj.MAC).toString()
-      console.log("checkMAC: ", checkMAC, "   checkMAC.length: ", checkMAC.length)
-
-      
-      if (checkMAC.length === 12) {
-
-        if(this.obj.feederAlert_str === "飼料不足" || this.obj.blobAlert_str === "髒污" || this.obj.voltAlert_str === "電量不足"){
-          this.playOKSound()
-        }
-
-        this.buffArray = last_data_for_mqtt.filter(exclude => exclude.MAC !== checkMAC)
-        console.log("this.buffArray before adding: ", this.buffArray)
-        this.buffArray.unshift(this.obj)
-        console.log("this.buffArray after adding: ", this.buffArray)
-
-        for (var j = 0; j < this.buffArray.length; j++) {
-          this.buffArray[j].timeStr = moment(this.buffArray[j].timestamp * 1000).locale('zh-TW').format('YYYY/MM/DD HH:mm:ss')
-          this.buffArray[j].volt = parseFloat(this.buffArray[j].volt.toFixed(2))
-        }
-
-        var qtyMax = 200
-        if (this.buffArray.length > qtyMax) {
-          var temparray = []
-          for (let i = 0; i < qtyMax; i++) {
-            temparray.push(this.buffArray[i])
-          }
-          last_data_for_mqtt = temparray
-          this.check_for_add_btn(last_data_for_mqtt)
-          
-        } 
-        else {
-          console.log(this.buffArray.length)
-          last_data_for_mqtt = this.buffArray
-          this.check_for_add_btn(last_data_for_mqtt)
-        }
-      } 
-      else {
-        console.log('not for this user, NO show')
-      }
     }
-  }
+  },
+  mounted() {}
 };
 </script>
 

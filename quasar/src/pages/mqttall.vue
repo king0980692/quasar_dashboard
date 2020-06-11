@@ -1,6 +1,6 @@
 <template>
 <q-page q-pa-md row no-wrap items-center justify-around>
-<template>
+<!-- <template>
   <div class="q-pa-md q-gutter-sm">
     <q-dialog v-model="persistent" persistent transition-show="scale" transition-hide="scale">
       <q-card class="bg-primary text-white" style="width: 300px">
@@ -19,7 +19,7 @@
       </q-card>
     </q-dialog>
   </div>
-</template>
+</template> -->
 <div>
  <h4 class="flex flex-center" v-if="showmsg === 'yes'"></h4>
   <div class="q-pa-md">
@@ -31,8 +31,7 @@
       :columns="columns"
       :filter="filter"
       row-key="index"
-      style="font-size:5px"
-      dense
+      style="font-size:5px; height:auto;"
     >
       <template v-slot:top-right>
         <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
@@ -50,17 +49,17 @@
           <q-td key="rackName" :props="props" style="width:80px;">{{props.row.rackName}}</q-td>
           <q-td key="cageID" :props="props" style="max-width:40px; font-size:8px;">{{ props.row.cageID }}</q-td>     
           <q-td key="volt" :props="props" style="max-width:40px; font-size:8px;">{{ props.row.volt }}</q-td>  
-          <q-td key="blob" :props="props" >{{ props.row.blob }}</q-td>    
-          <q-td key="feeder" :props="props">{{ props.row.feeder }}</q-td>    
+          <q-td key="blobAlert_str" :props="props" >{{ props.row.blobAlert_str }}</q-td>    
+          <q-td key="feederAlert_str" :props="props" style="min-width:70px;">{{ props.row.feederAlert_str }}</q-td>    
           <q-td key="result" :props="props" style="min-width:60px; font-size:8px;">{{ props.row.result }}</q-td>
           <q-td key="deathAlertInfo" :props="props" style="min-width:50px; font-size:8px;">{{ props.row.deathAlertInfo }}</q-td>
           <q-td key="gas1" :props="props" style="min-width:50px; font-size:8px;">{{ props.row.gas1 }}</q-td>
-          <q-td key="gas2" :props="props">{{ props.row.gas2 }}</q-td>
+          <q-td key="gas2" :props="props" style="max-width:50px;">{{ props.row.gas2 }}</q-td>
           <q-td key="gas3" :props="props" style="max-width:50px; font-size:8px;">{{ props.row.gas3 }}</q-td>
           <q-td key="gas4" :props="props" style="min-width:60px; font-size:8px;">{{ props.row.gas4 }}</q-td>
           <q-td key="gas5" :props="props" style="min-width:60px; font-size:8px;">{{ props.row.gas5 }}</q-td>
-          <q-td key="gas6" :props="props" style="min-width:60px; font-size:8px;">{{ props.row.gas6 }}</q-td>
-          <q-td key="gas7" :props="props" style="min-width:60px; font-size:8px;">{{ props.row.gas7 }}</q-td>
+          <q-td key="gas6" :props="props" style="min-width:70px; font-size:8px;">{{ props.row.gas6 }}</q-td>
+          <q-td key="gas7" :props="props" style="min-width:70px; font-size:8px;">{{ props.row.gas7 }}</q-td>
           <q-td key="gas8" :props="props" style="min-width:40px; font-size:8px;">{{ props.row.gas8 }}</q-td>
         </q-tr>
       </template>
@@ -102,8 +101,8 @@ export default {
         { name: 'rackName', label: 'rackName', field: 'rackName', sortable: true,},
         { name: 'cageID', label: 'cageID', field: 'cageID', sortable: true,},
         { name: 'volt', label: 'Batt%', field: 'volt' },
-        { name: 'blob', label: 'Excrement', field: 'blob' },
-        { name: 'feeder', label: 'Feeder', field: 'feeder' },
+        { name: 'blobAlert_str', label: 'Excrement', field: 'blobAlert_str' },
+        { name: 'feederAlert_str', label: 'Feeder', field: 'feederAlert_str' },
         // { name: 'bbox_count', label: 'QTY', field: 'bbox_count' },
         // { name: 'stillQty', label: 'Still QTY', field: 'stillQty' },
         { name: 'result', label: 'Still Msg', field: 'result' },
@@ -133,21 +132,23 @@ export default {
     console.log(this.MAC)
     this.topicmqtt = 'topic/event/#'
     this.$mqtt.subscribe(this.topicmqtt)
-    console.log(this.topicmqtt)
+    // console.log(this.topicmqtt)
     this.showmsg = 'yes'
     Loading.show({
       delay: 400,
       spinner: QSpinnerGears
     })
 
-    const requestOne = axios.get('http://strapi.frrut.net:1337/device-collections')
-    const requestTwo = axios.get('http://strapi.frrut.net:1337/last-data')
+    const requestOne = axios.get('https://api.frrut.net/device-collections')
+    const requestTwo = axios.get('https://api.frrut.net/last-data')
     // const requestTwo = axios.get('http://strapi.frrut.net:1337/event-lasts')
-    const requestThree = axios.get('http://strapi.frrut.net:1337/mk-100-users')
-    axios.all([requestOne, requestTwo, requestThree]).then(axios.spread((...responses) => {
+    const requestThree = axios.get('https://api.frrut.net/mk-100-users')
+    const requestFour = axios.get('https://api.frrut.net/all-data?_limit=1000&_sort=timestamp:DESC&MAC_ncontains=111111111111')
+    axios.all([requestOne, requestTwo, requestThree, requestFour]).then(axios.spread((...responses) => {
       this.deviceCollection = responses[0].data
-      var apiData = responses[1].data
+      this.eventLasts = responses[1].data
       var mk100users = responses[2].data
+      var apiData = responses[3].data
 
       var userInfo = [JSON.parse(localStorage.getItem('loginInfo'))]
 
@@ -197,11 +198,12 @@ export default {
           userMAC = [this.MAC]
           console.log('update this.userMACList')
           console.log(this.userMACList)
-        } else {
+        } 
+        else {
           console.log('Not In show warning')
           this.userMACList = []
           userMAC = []
-          this.persistent = true
+          // this.persistent = true
         }
       }
       // console.log('*******this.deviceCollection**********')
@@ -232,7 +234,7 @@ export default {
       console.log('***qty***')
       console.log(qty)
       if (qty === 0) {
-        this.persistent = true
+        // this.persistent = true
       }
 
       // console.log(JSON.stringify(apiData))
@@ -266,85 +268,61 @@ export default {
 
         }
       }
-      
       this.data = testdata
       this.data = this.data.sort((a, b) => b.timestamp - a.timestamp)
-      this.buffArray = testdata
-      
-      console.log("this.data: ", this.data)
-      // this.data = this.data.filter(test => test.oaAlertStatus === true)
-      // console.log('this.data before done')
-      // this.data = this.data.filter(test => test.oaAlertStatus === true)
-      // return this.data
-      // console.log(this.data)
-
-      // this.data = this.buffArray
+      // this.buffArray = testdata
+  
     })).catch(errors => {
     })
   },
   mounted () {
   },
-  // mqtt: {
-  //   // 'topic/mac/#' (data, topic) {
-  // 'topic/event/#' (data, topic) {
-  //     this.obj = JSON.parse(data)
-  //     var checkMAC = this.userMACList.filter(test => test === this.obj.MAC).toString()
-  //     console.log(checkMAC.length)
-  //     if (checkMAC.length === 12) {
-  //       this.array = [this.obj]
-  //       console.log(JSON.stringify(this.array))
-  //       console.log('print thisbuffarray')
-  //       console.log(this.buffArray)
-  //       this.tempbuffarray = this.buffArray
-  //       this.buffArray2 = this.tempbuffarray.concat(this.array)
-  //       // console.log('*****Add print thisbuffarray*******')
-  //       // console.log(JSON.stringify(this.buffArray2))
-  //       // console.log(JSON.stringify(this.buffArray2.length))
-  //       // this.buff = JSON.stringify(this.buffArray)
-  //       this.buffArray1 = this.buffArray2.sort((a, b) => b.timestamp - a.timestamp)
-  //       // this.data1 = this.buffArray1
-  //       // this.buffArray = this.buffArray1
-  //       for (var j = 0; j < this.buffArray1.length; j++) {
-  //         this.buffArray1[j].fromNow = moment(this.buffArray1[j].timestamp * 1000).locale('zh-TW').fromNow()
-  //         this.buffArray1[j].timeStr = moment(this.buffArray1[j].timestamp * 1000).locale('zh-TW').format('YYYY/MM/DD HH:mm:ss')
-  //         this.buffArray1[j].gas6 = parseFloat(this.buffArray1[j].gas6.toFixed(6))
-  //         this.buffArray1[j].gas7 = parseFloat(this.buffArray1[j].gas7.toFixed(6))
-  //         this.buffArray1[j].gas8 = parseFloat(this.buffArray1[j].gas8.toFixed(6))
+  mqtt: {
+    'topic/event/#' (data, topic) {
+      this.obj = JSON.parse(data)
+      console.log('original this.obj print')
+      console.log(this.obj)
+      this.timestr = this.obj.timeStr
+      console.log('this.userMACList, userMAC')
+      console.log(this.userMACList)
+      var checkMAC = this.userMACList.filter(test => test === this.obj.MAC).toString()
+      console.log(checkMAC.length)
+      
+      if (checkMAC.length === 12) {
+        this.buffArray = this.data
+        this.buffArray.unshift(this.obj)
 
-  //       }
-  //       // this.data = this.buffArray1
-  //       // this.buffArray = this.buffArray1
-  //       // console.log(JSON.stringify(this.data))
-  //       // console.log(JSON.stringify(this.data.length))
-  //       // console.log(JSON.stringify(this.data))
-  //       var qtyMax = 100
-  //       if (this.buffArray1.length > qtyMax) {
-  //         var temparray = []
-  //         for (let i = 0; i < qtyMax; i++) {
-  //           temparray.push(this.buffArray1[i])
-  //         }
-  //         console.log(temparray.length)
-  //         this.data = temparray
-  //         this.buffArray = temparray
-  //         console.log(JSON.stringify(this.data))
-  //         console.log(JSON.stringify(this.data.length))
-  //         this.playOKSound()
-  //       } 
-  //       else {
-  //         console.log(this.buffArray1.length)
-  //         this.data = this.buffArray1
-  //         this.buffArray = this.buffArray1
-  //         this.playOKSound()
-  //       }
-  //       // console.log(temparray.length)
-  //       // this.buffArray = temparray
-  //     } 
-  //     else {
-  //       console.log('not for this user, NO show')
-  //       this.playLostcontactSound()
-  //     }
-  //   }
-  // },
+        for (var j = 0; j < this.buffArray.length; j++) {
+          this.buffArray[j].fromNow = moment(this.buffArray[j].timestamp * 1000).locale('zh-TW').fromNow()
+          this.buffArray[j].timeStr = moment(this.buffArray[j].timestamp * 1000).locale('zh-TW').format('YYYY/MM/DD HH:mm:ss')
+          this.buffArray[j].volt = parseFloat(this.buffArray[j].volt.toFixed(2))
+          this.buffArray[j].gas6 = parseFloat(this.buffArray[j].gas6.toFixed(6))
+          this.buffArray[j].gas7 = parseFloat(this.buffArray[j].gas7.toFixed(6))
+          this.buffArray[j].gas8 = parseFloat(this.buffArray[j].gas8.toFixed(6))
+        }
+
+        var qtyMax = 300
+        if (this.buffArray.length > qtyMax) {
+          var temparray = []
+          for (let i = 0; i < qtyMax; i++) {
+            temparray.push(this.buffArray[i])
+          }
+          console.log(temparray.length)
+          this.data = temparray
+          this.playOKSound()
+        } 
+        else {
+          console.log(this.buffArray.length)
+          this.data = this.buffArray
+          this.playOKSound()
+        }
+      } 
+      else {
+        console.log('not for this user, NO show')
+        // this.playLostcontactSound()
+      }
+    }
+  },
   methods: {
     url_handle (props) {
       this.$router.push(
@@ -390,7 +368,7 @@ export default {
 .my-sticky-header-table
   /* max height is important */
   .q-table__middle
-    max-height: 800px
+
 
   .q-table__top,
   .q-table__bottom,

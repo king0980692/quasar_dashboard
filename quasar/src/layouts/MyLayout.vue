@@ -172,7 +172,7 @@
 
 import { openURL } from 'quasar'
 import axios from 'axios'
-var baseURL = 'http://strapi.frrut.net:1337/mk-100-users/'
+var baseURL = 'https://api.frrut.net/mk-100-users/'
 var tblogin_username = ''
 var tblogin_password = ''
 
@@ -202,7 +202,7 @@ export default {
   },
   methods:{
     goto_thingsboard(){      
-      openURL("http://test.frrut.net:9090/login")
+      openURL("https://tb.frrut.net/login")
     },
     goto_kibana(){
       // openURL("")

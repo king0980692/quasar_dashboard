@@ -122,7 +122,7 @@
 import axios from 'axios'
 import { openURL } from 'quasar'
 
-var baseURL = 'http://strapi.frrut.net:1337/mk-100-users/'
+var baseURL = 'https://api.frrut.net/mk-100-users/'
 // var loginInfo_slack = JSON.parse(localStorage.getItem('loginInfo') || '{}')
 // var slackURL = 'https://slack.com/oauth/authorize?scope=incoming-webhook&client_id=914264040262.899946458546&state=' + loginInfo_slack.id
 

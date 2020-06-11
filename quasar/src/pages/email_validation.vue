@@ -17,17 +17,17 @@
               there are 6 verification codes need to be enter. Please check the email you fill in.</font>
             </p>
 
-            <div class="column" style="max-height: 75px" >
+            <div class="column" style="max-height: 75px; align-items:center;" >
                 <q-input
                     filled
                     v-model="input_verificate_codes"
                     hint= "Enter verification codes."
                     type= "text"
-                    mask="#    #    #    #    #    #"
+                    mask="#        #        #        #        #        #"
                     unmasked-value
                     fill-mask = "-"
                     input-class='text-center'
-                    style="max-height: 75px"
+                    style="max-height: 75px; width: 250px;"
                     >
                 </q-input>
             </div>
@@ -52,7 +52,7 @@ import {
 } from 'quasar'
 import router from "../router"; 
 
-var baseURL = 'http://strapi.frrut.net:1337/mk-100-users/'
+var baseURL = 'https://api.frrut.net/mk-100-users/'
 
 var exist_email = []
 var validate_code = ''//localStorage.getItem('Authorization')

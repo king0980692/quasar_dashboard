@@ -25,6 +25,38 @@
       </q-card>
     </q-dialog>
 
+    <!-- <q-dialog v-model="show_warning">
+      <q-card>
+        <q-card-section class="bg-primary">
+          <div class="text-h6 text-white">No Cage in the Rack</div>
+        </q-card-section>
+
+        <q-card-section class="q-pa-md">
+          Please go to "Devices List" and assign a Cage to the Rack.
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog> -->
+
+    <q-dialog v-model="show_warning">
+      <q-card>
+        <q-card-section class="bg-primary text-white row items-center ">
+          <div class="text-h6">No Cage in the Rack</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pb-lg">
+          Please go to "Devices List" and assign a Cage to the Rack.
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    
+
     <q-dialog v-model="register_fail" persistent >
       <q-card>
         <q-card-section>
@@ -185,6 +217,7 @@ export default {
   name: 'app',
   data () {
     return {
+      show_warning: false,
       rack_data: '',
       newrackDialog: false,
       register_fail: false,
@@ -225,45 +258,42 @@ export default {
   },
   created () {
     this.loginInfo = JSON.parse(localStorage.getItem('loginInfo') || '{}')
-    axios.get('http://strapi.frrut.net:1337/mk-100-users/')
-      .then(response => {
-        this.getdata = response.data
-        this.tblogin_useremail = this.getdata.find(x => x.id === this.loginInfo.id).email
-        console.log("tblogin_useremail: ", this.tblogin_useremail)
-      })
-    console.log("route.query: ", this.$route.query)
-    this.MAC = this.$route.query.MAC
-    console.log("MAC: ", this.MAC)
-    if (this.MAC === undefined) {
-      this.topicmqtt = 'topic/event/#'
-    } else {
-      this.topicmqtt = 'topic/event/' + this.MAC
-    }
-    this.$mqtt.subscribe(this.topicmqtt)
-    console.log("topicmqtt: ", this.topicmqtt)
+
+    // console.log("route.query: ", this.$route.query)
+    // this.MAC = this.$route.query.MAC
+    // console.log("MAC: ", this.MAC)
+    // if (this.MAC === undefined) {
+    //   this.topicmqtt = 'topic/event/#'
+    // } else {
+    //   this.topicmqtt = 'topic/event/' + this.MAC
+    // }
+    // this.$mqtt.subscribe(this.topicmqtt)
+    // console.log("topicmqtt: ", this.topicmqtt)
     this.showmsg = 'yes'
     Loading.show({
       delay: 400,
       spinner: QSpinnerGears
     })
-    const requestOne = axios.get('http://strapi.frrut.net:1337/device-collections')
-    const requestTwo = axios.get('http://strapi.frrut.net:1337/event-lasts')
-    const requestThree = axios.get('http://strapi.frrut.net:1337/mk-100-users')
+    const requestOne = axios.get('https://api.frrut.net/device-collections')
+    const requestTwo = axios.get('https://api.frrut.net/last-data')
+    const requestThree = axios.get('https://api.frrut.net/mk-100-users')
     axios.all([requestOne, requestTwo, requestThree]).then(axios.spread((...responses) => {
       this.deviceCollection = responses[0].data
       this.eventLasts = responses[1].data
       var mk100users = responses[2].data
-      var user_rack = responses[2].data
-      console.log('user_info: ', user_rack)
-      user_rack = user_rack.filter(e => e.id === this.loginInfo.id)
-      console.log('user_rack: ', user_rack)
-      for (var i = 0; i < user_rack.length; i++) {
-        for (var j = 0; j < user_rack[i].respRack.length; j++) {
-            exist_rack.push(user_rack[i].respRack[j])
+      console.log('user_info: ', mk100users)
+      this.tblogin_useremail = mk100users.find(x => x.id === this.loginInfo.id).email
+
+      var filter_mk100users = mk100users.filter(e => e.id === this.loginInfo.id)
+      console.log('filter_user_info: ', filter_mk100users)
+      for (var i = 0; i < filter_mk100users.length; i++) {
+        for (var j = 0; j < filter_mk100users[i].respRack.length; j++) {
+            exist_rack.push(filter_mk100users[i].respRack[j])
         }
       }
       Loading.hide()
       exist_rack = Array.from(new Set(exist_rack));
+      exist_rack = exist_rack.filter(rack => rack !== '0')
       console.log('exist_rack: ', exist_rack)
 
       var userInfo = [JSON.parse(localStorage.getItem('loginInfo'))]
@@ -276,13 +306,12 @@ export default {
           if (userInfo[e].id === mk100users[f]._id) {
             // userInfo[e].groups = mk100users[f].groups
             userInfo[e].role = mk100users[f].role
+            userInfo[e].respRack = mk100users[f].respRack
           }
         }
       }
       console.log('====Userinfo====')
       console.log(userInfo)
-      // var racks = userInfo[0].groups
-      // console.log(racks)
       var role = userInfo[0].role
       console.log(role)
       var userID = userInfo[0].id
@@ -290,6 +319,11 @@ export default {
 
       var fllterMAC = []
       var fllterDevices = []
+      
+      this.deviceCollection = this.deviceCollection.filter(device => device.rackName !== '0')
+      this.deviceCollection = this.deviceCollection.filter(device => device.cageID !== 0)
+      console.log("this.deviceCollection: ", this.deviceCollection)
+      
 
       if (role === 'admin') {
         this.deviceCollection.map(function (a) {
@@ -328,14 +362,17 @@ export default {
       fllterDevices = fllterDevices.filter(e => e.deviceRegiStatus === true)
       console.log('====fllterDevices====')
       console.log(fllterDevices)
+      var using_rackList = []
 
       var group = fllterDevices.map((item) => item.rackUser).filter((item, i, ar) => ar.indexOf(item) === i).sort((a, b) => a - b).map(item => {
         let rackList = fllterDevices.filter(itm => itm.rackUser === item).map(itm => itm.rackName)
         let userList = fllterDevices.filter(itm => itm.rackUser === item).map(itm => itm.username)
 
         let maclist = fllterDevices.filter(itm => itm.rackUser === item).map(itm => itm.MAC)
-
+        console.log("rackList: ",rackList)
+        using_rackList.push(rackList[0])
         var qty = maclist.length
+
         let cageid = JSON.stringify(fllterDevices.filter(itm => itm.rackUser === item).map(itm => itm.cageID))
         cageid = cageid.replace('[', '')
         cageid = cageid.replace(']', '')
@@ -355,6 +392,28 @@ export default {
       console.log("==== Group ====")
       console.log("Group: ", group)
       console.log("Group length: ", group.length)
+      console.log("Group type: ", typeof(group))
+
+      console.log("using_rackList: ", using_rackList)
+      var empty_rackList = exist_rack.filter((e)=>{
+        return using_rackList.indexOf(e) === -1
+      })
+      console.log("empty_rackList: ", empty_rackList)
+      
+      var final_group = []
+
+      for(var i = 0; i < empty_rackList.length; i++){
+        var group2 = {}
+        group2.rackname = empty_rackList[i]
+        group2.user = userInfo[0].username
+        group2.qty = 0
+        group2.cages = ''
+        group2.shortmac = ''
+        console.log("group2: ", group2)
+        group.push(group2)
+      }
+      
+
 /*
 // ######################################################################################################################
 
@@ -363,6 +422,7 @@ export default {
       this.data = group
       this.showmsg = 'no'
       Loading.hide()
+
       // we generate lots of rows here
       let data = []
       for (let i = 0; i < 1000; i++) {
@@ -373,66 +433,69 @@ export default {
       })
       Object.freeze(data)
       data = this.data
+      // console.log("data: ", data[0])
+      // console.log(typeof(data))
+
     })).catch(errors => {
     })
-    console.log("DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: ", this.data.length)
+    // console.log("DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: ", this.data.length)
   },
   mounted () {
   },
-  mqtt: {
-    'topic/event/#' (data1, topic) {
-      console.log('topic(this.topicmqtt): ' + this.topicmqtt)
-      this.obj = JSON.parse(data1)
-      // console.log('original this.obj print')
-      // console.log(this.obj)
-      if (this.buffArray === undefined) {
-        for (var m = 0; m < this.dataArray.length; m++) {
-          for (var j = 0; j < this.deviceCollection.length; j++) {
-            if (this.dataArray[m].cageID === this.deviceCollection[j].cageID) {
-              this.dataArray[m].MAC = this.deviceCollection[j].MAC
-              this.dataArray[m].id = this.deviceCollection[j].id
-              // this.dataArray[m].testtest = this.deviceCollection[j].id
-            }
-          }
-        }
-        console.log('new this.dataArray.length')
-        console.log(JSON.stringify(this.dataArray))
-        console.log(this.dataArray.length)
+  // mqtt: {
+  //   'topic/event/#' (data1, topic) {
+  //     console.log('topic(this.topicmqtt): ' + this.topicmqtt)
+  //     this.obj = JSON.parse(data1)
+  //     // console.log('original this.obj print')
+  //     // console.log(this.obj)
+  //     if (this.buffArray === undefined) {
+  //       for (var m = 0; m < this.dataArray.length; m++) {
+  //         for (var j = 0; j < this.deviceCollection.length; j++) {
+  //           if (this.dataArray[m].cageID === this.deviceCollection[j].cageID) {
+  //             this.dataArray[m].MAC = this.deviceCollection[j].MAC
+  //             this.dataArray[m].id = this.deviceCollection[j].id
+  //             // this.dataArray[m].testtest = this.deviceCollection[j].id
+  //           }
+  //         }
+  //       }
+  //       console.log('new this.dataArray.length')
+  //       console.log(JSON.stringify(this.dataArray))
+  //       console.log(this.dataArray.length)
 
-        this.showmsg = 'no'
-        Loading.hide()
-        this.dataArray[0].initTS = Date.now()
-        this.dataArray[0].thisUpdateTS = Date.now()
-        this.dataArray[0].count = 1
-        this.sincelastUpdate = 'just now'
-        this.fromNow = 'just now'
-        this.count = 1
-        console.log('print this.data')
-        console.log(this.dataArray)
-        console.log(' first****** this.obj print')
-        console.log(this.obj)
-        this.dataArray[this.obj.cageID - 1] = this.obj
-        console.log('print ******first array this.data')
-        console.log(this.dataArray)
-        console.log(Array.isArray(this.dataArray))
-        this.buffArray = this.dataArray
-        // stange to have this to work
-        this.test1 = JSON.stringify(Math.floor(Math.random() * 10))
-      } else {
-        this.buffArray[this.obj.cageID - 1] = this.obj
-        this.dataArray = this.buffArray
-        console.log('print 2nd + this.data')
-        console.log(this.dataArray)
-        console.log(Array.isArray(this.dataArray))
-        this.count = this.count + 1
-        this.dataArray[0].count = this.count
-        this.sincelastUpdate = moment(this.dataArray[0].thisUpdateTS).locale('zh-TW').fromNow()
-        this.fromNow = moment(this.dataArray[0].initTS).locale('zh-TW').fromNow()
-        this.test1 = JSON.stringify(Math.floor(Math.random() * 10))
-        this.dataArray[0].thisUpdateTS = Date.now()
-      }
-    }
-  },
+  //       this.showmsg = 'no'
+  //       Loading.hide()
+  //       this.dataArray[0].initTS = Date.now()
+  //       this.dataArray[0].thisUpdateTS = Date.now()
+  //       this.dataArray[0].count = 1
+  //       this.sincelastUpdate = 'just now'
+  //       this.fromNow = 'just now'
+  //       this.count = 1
+  //       console.log('print this.data')
+  //       console.log(this.dataArray)
+  //       console.log(' first****** this.obj print')
+  //       console.log(this.obj)
+  //       this.dataArray[this.obj.cageID - 1] = this.obj
+  //       console.log('print ******first array this.data')
+  //       console.log(this.dataArray)
+  //       console.log(Array.isArray(this.dataArray))
+  //       this.buffArray = this.dataArray
+  //       // stange to have this to work
+  //       this.test1 = JSON.stringify(Math.floor(Math.random() * 10))
+  //     } else {
+  //       this.buffArray[this.obj.cageID - 1] = this.obj
+  //       this.dataArray = this.buffArray
+  //       console.log('print 2nd + this.data')
+  //       console.log(this.dataArray)
+  //       console.log(Array.isArray(this.dataArray))
+  //       this.count = this.count + 1
+  //       this.dataArray[0].count = this.count
+  //       this.sincelastUpdate = moment(this.dataArray[0].thisUpdateTS).locale('zh-TW').fromNow()
+  //       this.fromNow = moment(this.dataArray[0].initTS).locale('zh-TW').fromNow()
+  //       this.test1 = JSON.stringify(Math.floor(Math.random() * 10))
+  //       this.dataArray[0].thisUpdateTS = Date.now()
+  //     }
+  //   }
+  // },
   methods: {
     MAC_handle (MAC) {
       console.log(MAC)
@@ -453,9 +516,15 @@ export default {
       )
     },
     rack_handle (props) {
-      this.$router.push(
-        { path: '/cagedash?rack=' + props.row.rackname }
-      )
+      if(props.row.qty === 0){
+        this.show_warning = true
+      }
+      else{
+        this.$router.push(
+          { path: '/cagedash?rack=' + props.row.rackname }
+        )
+      }
+
     },
     getId () {
       var getinfo = localStorage.getItem('loginInfo')
@@ -540,6 +609,7 @@ export default {
         axios.post(addnewRackURL, postdata)
           .then(response => {
             console.log(response)
+            
           })
           .catch(error => {
             console.log(error)

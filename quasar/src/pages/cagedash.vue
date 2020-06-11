@@ -389,9 +389,10 @@ export default {
       delay: 400,
       spinner: QSpinnerGears
     })
-    const requestOne = axios.get('http://strapi.frrut.net:1337/device-collections')
-    const requestTwo = axios.get('http://strapi.frrut.net:1337/event-lasts')
-    const requestThree = axios.get('http://strapi.frrut.net:1337/mk-100-users')
+    const requestOne = axios.get('https://api.frrut.net/device-collections')
+    // const requestTwo = axios.get('http://strapi.frrut.net:1337/event-lasts')
+    const requestTwo = axios.get('https://api.frrut.net/last-data')
+    const requestThree = axios.get('https://api.frrut.net/mk-100-users')
     axios.all([requestOne, requestTwo, requestThree]).then(axios.spread((...responses) => {
       this.deviceCollection = responses[0].data
       this.eventLasts = responses[1].data

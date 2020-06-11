@@ -130,7 +130,7 @@ import {
 } from 'quasar'
 
 //var baseURL = 'https://mk100.frrut.net:1880/mk-100-users' //test
-var baseURL = 'http://strapi.frrut.net:1337/mk-100-users/'
+var baseURL = 'https://api.frrut.net/mk-100-users/'
 var validateURL = 'https://mk100.frrut.net:1880/mk100email'
 var forget_pw_URL = 'https://mk100.frrut.net:1880/forgetpassword'
 var exist_email = []
